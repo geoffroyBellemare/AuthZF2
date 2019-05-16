@@ -3,7 +3,7 @@
 
 	# If URL to the application is http://foo.com/path/to/ZendSkeletonApplication/
 	# the set the base to /path/to/ZendSkeletonApplication/
-	RewriteBase /zf
+	RewriteBase /api
 
 	RewriteRule ^\.htaccess$ - [F]
 	RewriteCond %{REQUEST_URI} =""
