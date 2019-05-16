@@ -6,10 +6,16 @@
  * Time: 23:35
  */
 
-namespace Prestation;
+namespace Prestation\Controller;
 
 
-class IndexController
+use Zend\Mvc\Controller\AbstractActionController;
+use Zend\View\Model\ViewModel;
+
+class IndexController extends  AbstractActionController
 {
 
+    public function indexAction(){
+        return new ViewModel();
+    }
 }
