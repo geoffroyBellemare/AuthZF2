@@ -11,6 +11,7 @@ namespace Prestation\Controller;
 
 
 
+use Prestation\Service\PrestationServiceImpl;
 use Zend\EventManager\EventManagerInterface;
 use Zend\Mvc\Controller\AbstractRestfulController;
 use Zend\Mvc\MvcEvent;
@@ -37,6 +38,8 @@ class PrestationRestController extends AbstractRestfulController
     {
         $this->options();
         $this->response->setStatusCode(200);
+        $service = $this->getPrestationService();
+        $service->save();
         $variables = array();
         $action = $this->params()->fromRoute('slug');
         $variables['data'] = $action;
@@ -112,7 +115,12 @@ class PrestationRestController extends AbstractRestfulController
     }
 
 
-
+    /**
+     * @return PrestationServiceImpl $prestationService
+     */
+    protected function getPrestationService() {
+        return $this->getServiceLocator()->get('Prestation\Service\PrestationService');
+    }
     // configure response
     public function getResponseWithHeader()
     {
