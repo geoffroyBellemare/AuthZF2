@@ -9,7 +9,23 @@
 namespace Prestation\Service\Factory;
 
 
-class RentServiceFactory
+use Prestation\Service\RentServiceImpl;
+use Zend\ServiceManager\FactoryInterface;
+use Zend\ServiceManager\ServiceLocatorInterface;
+
+class RentServiceFactory implements FactoryInterface
 {
 
+    /**
+     * Create service
+     *
+     * @param ServiceLocatorInterface $serviceLocator
+     * @return mixed
+     */
+    public function createService(ServiceLocatorInterface $serviceLocator)
+    {
+        $rentRepo = $serviceLocator->get('Prestation\Repository\RentRepository');
+        $service = new RentServiceImpl($rentRepo);
+        return $service;
+    }
 }

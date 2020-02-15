@@ -9,7 +9,25 @@
 namespace Prestation\Service\Factory;
 
 
-class PeriodServiceFactory
+use Prestation\Service\PeriodServiceImpl;
+use Zend\ServiceManager\FactoryInterface;
+use Zend\ServiceManager\ServiceLocatorInterface;
+
+class PeriodServiceFactory implements FactoryInterface
 {
 
+    /**
+     * Create service
+     *
+     * @param ServiceLocatorInterface $serviceLocator
+     * @return mixed
+     */
+    public function createService(ServiceLocatorInterface $serviceLocator)
+    {
+        $perioRepo = $serviceLocator->get('Prestation\Repository\PeriodRepository');
+        $horaireRepo = $serviceLocator->get('Prestation\Repository\HoraireRepository');
+        $service = new PeriodServiceImpl($perioRepo, $horaireRepo);
+
+        return $service;
+    }
 }

@@ -9,7 +9,11 @@
 namespace Prestation\Repository;
 
 
-interface SportCategoryRepository
+interface SportCategoryRepository extends RepositoryInterface
 {
-
+    /**
+     * @param \Prestation\Entity\SportCategory $sports
+     * @return null|int
+     */
+    public function save($sports);
 }

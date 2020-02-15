@@ -21,87 +21,26 @@ class MarkerServiceImpl implements MarkerService
      * @var \Prestation\Repository\MarkerRepository
      */
     public $markerRepository;
-    /**
-     * @var \Prestation\Repository\LocalityRepository
-     */
-    public $localityRepository;
-    /**
-     * @var \Prestation\Repository\DepartementRepository
-     */
-    public $departementRepository;
-    /**
-     * @var \Prestation\Repository\RegionRepository
-     */
-    public $regionRepository;
-    /**
-     * @var \Prestation\Repository\CountryRepository
-     */
-    public $countryRepository;
 
-    /**
-     * MarkerServiceImpl constructor.
-     * @param \Prestation\Repository\MarkerRepository $markerRepository
-     * @param \Prestation\Repository\LocalityRepository $localityRepository
-     * @param \Prestation\Repository\DepartementRepository $departementRepository
-     * @param \Prestation\Repository\RegionRepository $regionRepository
-     * @param \Prestation\Repository\CountryRepository $countryRepository
-     */
-    public function __construct(\Prestation\Repository\MarkerRepository $markerRepository, \Prestation\Repository\LocalityRepository $localityRepository, \Prestation\Repository\DepartementRepository $departementRepository, \Prestation\Repository\RegionRepository $regionRepository, \Prestation\Repository\CountryRepository $countryRepository)
+
+    public function __construct(\Prestation\Repository\MarkerRepository $markerRepository)
     {
         $this->markerRepository = $markerRepository;
-        $this->localityRepository = $localityRepository;
-        $this->departementRepository = $departementRepository;
-        $this->regionRepository = $regionRepository;
-        $this->countryRepository = $countryRepository;
+
     }
 
-    public function save($data) {
-        $country = $this->countryRepository->findByName($data['country']);
-        if (!$country) {
-            $country = new Country();
-            $country->setName($data['country']);
-            $country->setCode($data['country_code']);
-            $country->setId($this->countryRepository->create($country));
-        }
+    public function save ($data, $country, $locality, $department = null, $region = null) {
 
-        $region = $this->regionRepository->findByName($data['region']);
-        if( !$region ) {
-            $region = new Region();
-            $region->setName($data['region']);
-            $region->setId($this->regionRepository->create($region));
-        }
-
-        $departement = $this->departementRepository->findByName($data['departement']);
-        if(!$departement) {
-            $departement = new Departement();
-            $departement->setName($data['departement']);
-            $departement->setId($this->departementRepository->create($departement));
-        }
-
-        $locality = $this->localityRepository->findByName($data['locality']);
-        if(!$locality) {
-            $locality = new Locality();
-            $locality->setName($data['locality']);
-            $locality->setPostcode($data['postcode']);
-            $locality->setId($this->localityRepository->create($locality));
-        }
-
-        $marker = new Marker();
-        $marker->setLat((float)$data['lat']);
-        $marker->setLng($data['lng']);
-        $marker->setDepartement($departement);
-        $marker->setRegion($region);
-        $marker->setLocality($locality);
-        $marker->setCountry($country);
-
-        $markerRecorded = $this->markerRepository->findBy($marker);
-
-        if( !$markerRecorded ) {
+       $marker = $this->markerRepository->findBy($data['lat'], $data['lng']);
+        if( !$marker ) {
+            $marker = new Marker();
+            $marker->setLat($data['lat']);
+            $marker->setLng($data['lng']);
+            $marker->setCountry($country);
+            $marker->setLocality($locality);
+            if($department) $marker->setDepartement($department);
+            if($region) $marker->setRegion($region);
             $marker->setId($this->markerRepository->create($marker));
-            $this->departementRepository->createRelation($marker->getDepartement(), $marker);
-            $this->regionRepository->createRelation($marker->getRegion(), $marker);
-        } else {
-            $marker = $markerRecorded;
         }
 
         return $marker;

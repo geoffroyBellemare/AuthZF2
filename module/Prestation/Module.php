@@ -33,7 +33,7 @@ class Module implements ConfigProviderInterface, ServiceProviderInterface, Autol
 
     public function getServiceConfig()
     {
-        // TODO: Implement getServiceConfig() method.
+        return include __DIR__ . '/config/service.config.php';
     }
 
 }

@@ -13,14 +13,9 @@ interface RegionService
 {
     /**
      * @param $data
+     * @param \Prestation\Entity\Marker $marker
      * @return \Prestation\Entity\Region
      */
     public function save($data);
 
-    /**
-     * @param \Prestation\Entity\Region $region
-     * @param \Prestation\Entity\Marker $marker
-     * @return mixed
-     */
-    public function saveRelation($region, $marker);
 }

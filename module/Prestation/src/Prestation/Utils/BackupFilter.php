@@ -6,7 +6,7 @@
  * Time: 10:47
  */
 
-namespace Admin\Utils;
+namespace Prestation\Utils;
 
 
 use Cocur\Slugify\Slugify;

@@ -8,8 +8,6 @@
 
 namespace Prestation\Repository;
 
-
-use Application\Repository\RepositoryInterface;
 use Prestation\Entity\SubType;
 
 interface SubTypeRepository extends RepositoryInterface

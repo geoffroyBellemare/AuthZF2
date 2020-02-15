@@ -11,29 +11,22 @@ namespace Prestation\Service;
 
 use Prestation\Entity\Locality;
 
-class LocalityServiceImpl implements LocalityService
+class LocalityServiceImpl extends KeywordServiceImpl2 implements LocalityService
 {
 
     /**
      * @var \Prestation\Repository\LocalityRepository
      */
     public $localityRepository;
-    /**
-     * @var \Prestation\Service\KeywordServiceImpl
-     */
-    public $keywordService;
 
-    /**
-     * LocalityServiceImpl constructor.
-     * @param \Prestation\Repository\LocalityRepository $localityRepository
-     * @param KeywordServiceImpl $keywordService
-     */
-    public function __construct(\Prestation\Repository\LocalityRepository $localityRepository, KeywordServiceImpl $keywordService)
+
+
+    public function __construct(\Prestation\Repository\LocalityRepository $localityRepository, \Prestation\Repository\KeywordRepository $keywordRepository, \Prestation\Repository\AliasesRepository $aliasesRepository)
     {
+        parent::__construct($keywordRepository, $aliasesRepository);
         $this->localityRepository = $localityRepository;
-        $this->keywordService = $keywordService;
-    }
 
+    }
 
     /**
      * @param $data
@@ -41,10 +34,11 @@ class LocalityServiceImpl implements LocalityService
      */
     public function save($data)
     {
-
+        $keyword = $this->saveKeyword(2, $data['locality'], []);
         $locality = $this->localityRepository->findByName($data['locality']);
         if(!$locality) {
             $locality = new Locality();
+            $locality->setKId($keyword->getId());
             $locality->setName($data['locality']);
             $locality->setPostcode($data['postcode']);
             $locality->setId($this->localityRepository->create($locality));
@@ -54,7 +48,7 @@ class LocalityServiceImpl implements LocalityService
 
     public function saveFromBackup($data) {
 
-        $keyword = $this->keywordService->save(2, $data['locality'], []);
+        $keyword = $this->saveKeyword(2, $data['locality'], []);
 
 /*        $locality = new Locality();
         $locality->setKId($keyword->getId());

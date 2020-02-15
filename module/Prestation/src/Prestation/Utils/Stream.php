@@ -6,7 +6,7 @@
  * Time: 13:33
  */
 
-namespace Admin\Utils;
+namespace Prestation\Utils;
 
 
 /**

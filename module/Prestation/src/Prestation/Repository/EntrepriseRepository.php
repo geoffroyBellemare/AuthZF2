@@ -9,7 +9,25 @@
 namespace Prestation\Repository;
 
 
-interface EntrepriseRepository
-{
+use Prestation\Entity\Entreprise;
 
+interface EntrepriseRepository extends RepositoryInterface
+{
+    /**
+     * @param Entreprise $entreprise
+     * @return int|null
+     */
+    public function create($entreprise);
+
+    /**
+     * @param $name
+     * @return Entreprise|null
+     */
+    public function findByName($name);
+
+    /**
+     * @param $user_id
+     * @return Entreprise|null
+     */
+    public function fetchByUserId($user_id);
 }

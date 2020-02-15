@@ -12,83 +12,127 @@ namespace Prestation\Controller;
 
 
 use Prestation\Service\PrestationServiceImpl;
+use Prestation\Validator\HoraireValidator;
+use Prestation\Validator\MarkerLatLngNoRecordExist;
+use Prestation\Validator\MarkerValidator;
+use Prestation\Validator\ReservationValidator;
 use Zend\EventManager\EventManagerInterface;
 use Zend\Mvc\Controller\AbstractRestfulController;
 use Zend\Mvc\MvcEvent;
 use Zend\View\Model\JsonModel;
 
 
-class PrestationRestController extends AbstractRestfulController
+class PrestationController extends PrestationRestFullController
 {
+
     protected $collectionMethod = array('GET');
     protected $ressourceMethod = array('GET', 'POST', 'PUT', 'DELETE');
+    /**
+     * @var \Prestation\Service\PrestationService
+     */
+    protected $prestationService;
+    /**
+     * @var \Prestation\Validator\HoraireValidator
+     */
+    protected $horaireValidator;
+    /**
+     * @var \Prestation\Validator\ReservationValidator
+     */
+    protected $reservationValidator;
 
-    public function setEventManager(EventManagerInterface $events) {
-        parent::setEventManager($events);
-        $events->attach('dispatch', array($this, 'checkMethod'), 10);
+    /**
+     * @var \Zend\Db\Adapter\Adapter
+     */
+    protected $adapter;
+
+
+
+    public $dataCrash = array(
+        "country" => "france",
+        "country_code" => "FR",
+        "department" => "Normandie",
+        "region" => "Normandie",
+        "locality" => "Rouen",
+        "postcode" => "76000",
+        "lat" => 43.698204,
+        "lng" => 0.268103
+    );
+
+    /**
+     * PrestationController constructor.
+     * @param \Prestation\Service\PrestationService $prestationService
+     * @param \Zend\Db\Adapter\Adapter $adapter
+     */
+    public function __construct(\Prestation\Service\PrestationService $prestationService, HoraireValidator $horaireValidator, ReservationValidator $reservationValidator, \Zend\Db\Adapter\Adapter $adapter)
+    {
+        parent::__construct($prestationService);
+        $this->prestationService = $prestationService;
+        $this->horaireValidator = $horaireValidator;
+        $this->reservationValidator = $reservationValidator;
+        $this->adapter = $adapter;
     }
+
+
     public function get($id)
     {
         $this->options();
         $action = $this->params()->fromRoute('slug');
-
+        //route: api/controller/type?id=45
         return new JsonModel([$action,$id]);
     }
+
     public function getList()
     {
+
         $this->options();
         $this->response->setStatusCode(200);
-        $service = $this->getPrestationService();
-        $service->save();
+
         $variables = array();
         $action = $this->params()->fromRoute('slug');
-        $variables['data'] = $action;
+        $this->prestationService->save($this->dataCrash);
+       // $variables['data'] = $this->prestationService->save($this->dataCrash);
 
         return new JsonModel($variables);
 
-    }
-    protected function _getMethod() {
-        if (1/*$this->params()->fromRoute('slug', false)*/){
-            return $this->ressourceMethod;
-        }
-        return $this->collectionMethod;
-    }
-
-    public function checkMethod($e) {
-        if (in_array($e->getRequest()->getMethod(), $this->_getMethod())){
-            return;
-        }
-        $response = $this->getResponse();
-        $response->setStatusCode(405);
-        return $response;
-    }
-
-    public function options() {
-        $response = $this->getResponse();
-        $response->getHeaders()
-            ->addHeaderLine('Allow', implode(',', $this->_getMethod()))
-            ->addHeaderLine('Access-Control-Allow-Origin','*')
-            //set allow methods
-            ->addHeaderLine('Access-Control-Allow-Methods',$this->_getMethod());
-        return $response;
     }
 
 
     public function create($data)
     {
-
         $this->options();
-        $this->response->setStatusCode(400);
-        $action = $this->params()->fromRoute('slug');
+        $this->response->setStatusCode(200);
         $variables = array();
+        $optionsValidator = array(
+            'adapter' => $this->adapter,
+            'field' => '',
+            'table' => ''
+        );
+        //$action = $this->params()->fromRoute('slug');
 
+ //       $validatorMarker = new MarkerValidator($optionsValidator);
+        //$validatorHoraires = new HoraireValidator();
+/*        if ($this->horaireValidator->isValid($data)) {
+            var_dump('oki');
+        } else {
+            var_dump($this->horaireValidator->getMessages());
+        }*/
+       // $validatorHoraires->isValid($data);
+        /*$validatorMarker->isValid($data)*/
+/*        if ( 1  ) {
+            $variables['data'] = $this->prestationService->save($data);
+        } else {
+            $variables['data'] = $validatorMarker->getMessages();
+            $this->response->setStatusCode(406);
+        }*/
+        $testData = ['p_id' => ''];
+/*        if ($this->reservationValidator->isValid($data)) {
+            $variables['data'] = $this->prestationService->create($data);
+        } else {
+            var_dump($this->reservationValidator->getMessages());
+            $variables['errors'] = $this->reservationValidator->getMessages();
+        }*/
 
-        switch($action) {
-            default:
-                $variables['data'] = null;
-        }
         return new JsonModel($variables);
-
 
     }
 
@@ -101,37 +145,17 @@ class PrestationRestController extends AbstractRestfulController
         $variables['data'] = $data;
         return new JsonModel($variables['data']);
     }
-    protected function methodNotAllowed()
-    {
-        $this->response->setStatusCode(405);
-        throw new \Exception('Method Not Allowed');
-    }
+
 
     public function delete($id)
     {
-        $response = $this->getResponseWithHeader()
-            ->setContent(__METHOD__.' delete current data with id =  '.$id) ;
-        return $response;
-    }
+        $this->options();
+        $action = $this->params()->fromRoute('slug');
+        $variables = array();
+        $this->prestationService->delete($id);
+        $variables['data'] = ['potentielement une erreur'];
+        return new JsonModel($variables['data']);
 
-
-    /**
-     * @return PrestationServiceImpl $prestationService
-     */
-    protected function getPrestationService() {
-        return $this->getServiceLocator()->get('Prestation\Service\PrestationService');
-    }
-    // configure response
-    public function getResponseWithHeader()
-    {
-        $response = $this->getResponse();
-        $response->getHeaders()
-            //make can accessed by *
-            ->addHeaderLine('Access-Control-Allow-Origin','*')
-            //set allow methods
-            ->addHeaderLine('Access-Control-Allow-Methods','POST PUT DELETE GET');
-
-        return $response;
     }
 
 

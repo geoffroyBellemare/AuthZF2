@@ -6,7 +6,7 @@
  * Time: 23:08
  */
 
-namespace Prestation;
+namespace Reservation;
 
 
 use Zend\ModuleManager\Feature\AutoloaderProviderInterface;

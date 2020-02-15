@@ -11,17 +11,14 @@ namespace Prestation\Service;
 
 use Prestation\Entity\Departement;
 
-class DepartementServiceImpl implements DepartementService
+class DepartementServiceImpl extends KeywordServiceImpl2 implements DepartementService
 {
-    public $adapter;
+
     /**
      * @var \Prestation\Repository\DepartementRepository
      */
     public $departementRepository;
-    /**
-     * @var \Prestation\Service\KeywordServiceImpl
-     */
-    public $keywordService;
+
 
     /**
      * DepartementServiceImpl constructor.
@@ -29,11 +26,10 @@ class DepartementServiceImpl implements DepartementService
      * @param \Prestation\Repository\DepartementRepository $departementRepository
      * @param KeywordServiceImpl $keywordService
      */
-    public function __construct($adapter, \Prestation\Repository\DepartementRepository $departementRepository, KeywordServiceImpl $keywordService)
+    public function __construct(\Prestation\Repository\DepartementRepository $departementRepository, \Prestation\Repository\KeywordRepository $keywordRepository, \Prestation\Repository\AliasesRepository $aliasesRepository)
     {
-        $this->adapter = $adapter;
+        parent::__construct($keywordRepository, $aliasesRepository);
         $this->departementRepository = $departementRepository;
-        $this->keywordService = $keywordService;
     }
 
 
@@ -43,22 +39,19 @@ class DepartementServiceImpl implements DepartementService
      */
     public function save($data)
     {
-        $departement = $this->departementRepository->findByName($data['departement']);
-        if(!$departement) {
+        if( !isset($data["department"]) ) return null;
+        $keyword = $this->saveKeyword(3, $data["department"], []);
+
+        $department = $this->departementRepository->findByName($data["department"]);
+        if( !$department ) {
             $departement = new Departement();
-            $departement->setName($data['departement']);
+            $departement->setKId($keyword->getId());
+            $departement->setName($data["department"]);
             $departement->setId($this->departementRepository->create($departement));
         }
-        return $departement;
-    }
 
-    public function saveRelation($departement, $marker) {
-        $relation = $this->departementRepository->findRelation($departement, $marker);
 
-        if( !$relation ) {
-            $this->departementRepository->createRelation($departement, $marker);
-        }
-
+        return $department;
     }
 
     /**
@@ -69,7 +62,7 @@ class DepartementServiceImpl implements DepartementService
     public  function saveFromBackup($data, $marker) {
 
         if( !isset($data["administrative_area_level_2"]) ) return null;
-        $keyword = $this->keywordService->save(3, $data["administrative_area_level_2"], []);
+        $keyword = $this->saveKeyword(3, $data["administrative_area_level_2"], []);
 
         $department = $this->departementRepository->findByName($data["administrative_area_level_2"]);
         if( !$department ) {

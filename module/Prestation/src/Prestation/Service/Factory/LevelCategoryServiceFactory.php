@@ -9,7 +9,23 @@
 namespace Prestation\Service\Factory;
 
 
-class LevelCategoryServiceFactory
+use Prestation\Service\LevelCategoryServiceImpl;
+use Zend\ServiceManager\FactoryInterface;
+use Zend\ServiceManager\ServiceLocatorInterface;
+
+class LevelCategoryServiceFactory implements FactoryInterface
 {
 
+    /**
+     * Create service
+     *
+     * @param ServiceLocatorInterface $serviceLocator
+     * @return mixed
+     */
+    public function createService(ServiceLocatorInterface $serviceLocator)
+    {
+        $levelrepo = $serviceLocator->get('Prestation\Repository\LevelCategoryRepository');
+        $service = new LevelCategoryServiceImpl($levelrepo);
+        return $service;
+    }
 }

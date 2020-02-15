@@ -14,10 +14,10 @@ use Prestation\Entity\SubType;
 interface SubTypeService
 {
     /**
-     * @param \Prestation\Entity\SubType $subType
-     * @return mixed
+     * @param string[] $data
+     * @return null|SubType[]
      */
-    public function save($subType);
+    public function save($data);
 
     /**
      * @return SubType[] $subTypes

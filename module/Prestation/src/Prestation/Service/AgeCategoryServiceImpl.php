@@ -31,7 +31,7 @@ class AgeCategoryServiceImpl implements AgeCategoryService
 
     /**
      * @param $data
-     * @return  \Prestation\Entity\AgeCategory[]|null
+     * @return null|\Prestation\Entity\AgeCategory[]
      */
     public function save($data)
     {

@@ -9,15 +9,20 @@
 namespace Prestation\Service;
 
 
+use Prestation\Entity\Address;
 use Prestation\Entity\SportCategory;
 
-interface CRUDInterface
+interface AddressService
 {
     /**
      * @param $data
-     * @return mixed|null
+     * @param $l_id
+     * @param $c_id
+     * @param $d_id
+     * @param $r_id
+     * @return Address|null
      */
-    public function save($data);
+    public function save($data, $l_id, $c_id, $d_id, $r_id);
 
     /**
      * @param $id

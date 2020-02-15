@@ -8,14 +8,17 @@
 
 namespace Prestation\Entity\Hydrator;
 
+use Prestation\Entity\AgeCategory;
 use Prestation\Entity\Aliases;
 use Prestation\Entity\Country;
 use Prestation\Entity\Departement;
 use Prestation\Entity\Keyword;
+use Prestation\Entity\LevelCategory;
 use Prestation\Entity\Locality;
 use Prestation\Entity\Marker;
 use Prestation\Entity\Prestation;
 use Prestation\Entity\Region;
+use Prestation\Entity\SubType;
 use Prestation\Entity\Type;
 use Zend\Stdlib\Hydrator\HydratorInterface;
 
@@ -54,7 +57,41 @@ class PrestationHydrator implements HydratorInterface
         $object->setQuantity( isset($data['p_quantity']) ? $data['p_quantity'] : null);
         $object->setCreated( isset($data['p_created']) ? $data['p_created']: null);
 
+        if (isset($data['age_categories'])) {
+            $ageCategories = [];
+            foreach ( explode(',', $data['age_categories']) as $key => $value) {
+                list($c_a_id, $c_a_name) = explode(':', $value);
+                $ageCategory = new AgeCategory();
+                $ageCategory->setId($c_a_id);
+                $ageCategory->setName($c_a_name);
+                $ageCategories[] = $ageCategory;
+            }
+            if( count($ageCategories) > 0 )$object->setAgeCategory($ageCategories);
+        }
 
+        if (isset($data['level_categories'])) {
+            $levelCategories = [];
+            foreach (explode(',', $data['level_categories']) as $key => $value) {
+                list($c_l_id, $c_l_name) = explode(':', $value);
+                $levelCategory = new LevelCategory();
+                $levelCategory->setId($c_l_id);
+                $levelCategory->setName($c_l_name);
+                $levelCategories[] = $levelCategory;
+            }
+            if( count($levelCategories) > 0 )$object->setLevelCategory($levelCategories);
+        }
+
+        if (isset($data['sub_types'])) {
+            $subTypes = [];
+            foreach (explode(',', $data['sub_types']) as $key => $value) {
+                list($st_id, $st_name) = explode(':', $value);
+                $subtype = new SubType();
+                $subtype->setId($st_id);
+                $subtype->setName($st_name);
+                $subTypes[] = $subtype;
+            }
+            if( count($subTypes) > 0 )$object->setSubTypes($subTypes);
+        }
 
 /*        if( isset($data['m_id'])) {
             $marker = new Marker();

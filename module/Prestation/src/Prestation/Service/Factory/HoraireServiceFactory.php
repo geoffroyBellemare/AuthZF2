@@ -9,7 +9,25 @@
 namespace Prestation\Service\Factory;
 
 
-class HoraireServiceFactory
+use Prestation\Service\HoraireServiceImpl;
+use Zend\ServiceManager\FactoryInterface;
+use Zend\ServiceManager\ServiceLocatorInterface;
+
+class HoraireServiceFactory implements FactoryInterface
 {
 
+    /**
+     * Create service
+     *
+     * @param ServiceLocatorInterface $serviceLocator
+     * @return mixed
+     */
+    public function createService(ServiceLocatorInterface $serviceLocator)
+    {
+        // TODO: Implement createService() method.
+        $horaireRepo = $serviceLocator->get('Prestation\Repository\HoraireRepository');
+        $prestataireService = $serviceLocator->get('Prestation\Service\PrestataireService');
+        $service = new HoraireServiceImpl($horaireRepo, $prestataireService);
+        return $service;
+    }
 }

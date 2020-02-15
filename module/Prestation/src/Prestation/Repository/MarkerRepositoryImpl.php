@@ -37,15 +37,14 @@ class MarkerRepositoryImpl implements MarkerRepository
      */
     public function create($marker)
     {
+
+        $hydrator = new MarkerHydrator();
+        $values = $hydrator->extract($marker);
+
         try {
             $sql = $this->getSql();
             $insert = $sql->insert($this->table)
-                ->values(array(
-                    'lat' => $marker->getLat(),
-                    'lng' => $marker->getLng(),
-                    'l_id' => $marker->getLocality()->getId(),
-                    'c_id' => $marker->getCountry()->getId()
-                ));
+                ->values($values);
             $statment = $sql->prepareStatementForSqlObject($insert);
             $statment->execute();
 
@@ -87,6 +86,8 @@ class MarkerRepositoryImpl implements MarkerRepository
                     'lng',
                     'l_id',
                     'c_id',
+                    'd_id',
+                    'r_id',
                 ))
               ->join(
                     array('c' => 'country'),
@@ -100,27 +101,15 @@ class MarkerRepositoryImpl implements MarkerRepository
                  array('l_name','l_postcode'),
                  $select::JOIN_INNER
              )
-            ->join(
-                     array('dl' => 'department_linker'),
-                     'm.m_id = dl.m_id',
-                     array('d_id'),
-                     $select::JOIN_LEFT
-             )
              ->join(
              array('d' => 'department'),
-             'd.d_id = dl.d_id',
+             'd.d_id = m.d_id',
              array('d_name'),
              $select::JOIN_LEFT
             )
             ->join(
-                array('rl' => 'region_linker'),
-                'rl.m_id = m.m_id',
-                array('r_id'),
-                $select::JOIN_LEFT
-            )
-            ->join(
                 array('r' => 'region'),
-                'r.r_id = rl.r_id',
+                'r.r_id = m.r_id',
                 array('r_name'),
                 $select::JOIN_LEFT
             )
@@ -144,5 +133,77 @@ class MarkerRepositoryImpl implements MarkerRepository
     public function createRelation($marker, $prestation)
     {
         // TODO: Implement createRelation() method.
+    }
+
+    /**
+     * @param $data
+     * @return false|mixed
+     */
+    public function isFree($data)
+    {
+        var_dump('isfree');
+        var_dump($data);
+        $sql = new \Zend\Db\Sql\Sql($this->adapter);
+        $sql = $this->getSql();
+        $select = $sql->select();
+        $select
+            ->from(array('p'=> 'prestation'))
+            ->columns(array('p_id'))
+            ->join(
+                array('ml' => 'marker_linker'),
+                'ml.p_id = p.p_id',
+                array('*'),
+                $select::JOIN_INNER
+            )
+            ->join(
+                array('pd' => 'period'),
+                'p.p_id = pd.p_id',
+                array(
+                    'pd_start',
+                    'pd_end'
+                ),
+                $select::JOIN_INNER
+            )
+            ->join(
+                array('h' => 'horaire'),
+                'h.pd_id = pd.pd_id',
+                array(
+                    'h_start',
+                    'h_end'
+                ),
+                $select::JOIN_LEFT
+            )
+            ->join(
+                array('m' => 'marker'),
+                'ml.m_id = m.m_id',
+                array('*'),
+                $select::JOIN_INNER
+            )
+            ->join(
+                array('t' => 'type'),
+                't.t_id = p.t_id',
+                array('*'),
+                $select::JOIN_INNER
+            )
+            ->join(
+                array('l' => 'locality'),
+                'l.l_id = m.l_id',
+                array('*'),
+                $select::JOIN_INNER
+            )
+
+            ->where(array(
+                'p.p_name' => $data['name'],
+                'p.t_id' => $data['type'],
+                'l.l_name' => $data['locality']
+                /*'p.p_id' => $prestation->getId(),
+                'pd.pd_start <= ?' => $period->getPdStart(),
+                'pd.pd_end >= ?' => $period->getPdEnd(),
+                'h.h_start = ?' => $horaire->getHStart()*/
+            ));
+        $statment = $sql->prepareStatementForSqlObject($select);
+        $results = $statment->execute();
+        var_dump($results->current());
+        return $results->current();
     }
 }

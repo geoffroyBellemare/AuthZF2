@@ -11,43 +11,39 @@ namespace Prestation\Service;
 
 use Prestation\Entity\Type;
 
-class TypeServiceImpl implements TypeService
+class TypeServiceImpl extends KeywordServiceImpl2 implements TypeService
 {
     /**
      * @var \Prestation\Repository\TypeRepository
      */
     public $typeRepository;
-    /**
-     * @var \Prestation\Service\KeywordServiceImpl
-     */
-    public $keywordService;
+
 
     /**
      * TypeServiceImpl constructor.
      * @param \Prestation\Repository\TypeRepository $typeRepository
      * @param KeywordServiceImpl $keywordService
      */
-    public function __construct(\Prestation\Repository\TypeRepository $typeRepository, KeywordServiceImpl $keywordService)
+    public function __construct(\Prestation\Repository\TypeRepository $typeRepository, \Prestation\Repository\KeywordRepository $keywordRepository, \Prestation\Repository\AliasesRepository $aliasesRepository)
     {
+        parent::__construct($keywordRepository, $aliasesRepository);
         $this->typeRepository = $typeRepository;
-        $this->keywordService = $keywordService;
     }
 
 
     /**
      * @param array $data
-     * @return mixed
+     * @return Type|null
      */
     public function save($data)
     {
-        $type = $this->hydrate($data['type']);
-        $recordedType = $this->typeRepository->findByName($data['type']['name']);
-
-
-       if( !$recordedType ) {
+        $keyword = $this->saveKeyword(5, $data['name'], $data['aliases']);
+        $type = $this->typeRepository->findByName($data['name']);
+        if( !$type ) {
+            $type = new Type();
+            $type->setKId($keyword->getId());
+            $type->setName($data['name']);
             $type->setId($this->typeRepository->create($type));
-        } else {
-            $type = $recordedType;
         }
         return $type;
     }
@@ -57,7 +53,7 @@ class TypeServiceImpl implements TypeService
      * @return Type|null
      */
     public function saveFromBackup($data) {
-            $keyword = $this->keywordService->save(5, $data['type'], $data['aliases']);
+            $keyword = $this->saveKeyword(5, $data['type'], $data['aliases']);
         $type = $this->typeRepository->findByName($data['type']);
         if( !$type ) {
             $type = new Type();
@@ -74,16 +70,5 @@ class TypeServiceImpl implements TypeService
                 $type = $this->typeRepository->findByName($data['type']);
             }*/
             return $type;
-    }
-    /**
-     * @param $data
-     * @return Type
-     */
-    private function hydrate($data) {
-        $type = new Type();
-        $type->setId( isset($data['id'])? $data['id']: null );
-        $type->setName( isset($data['name'])? $data['name']: null);
-        return $type;
-
     }
 }

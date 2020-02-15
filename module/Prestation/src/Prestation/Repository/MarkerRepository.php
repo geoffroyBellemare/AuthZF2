@@ -9,7 +9,6 @@
 namespace Prestation\Repository;
 
 
-use Application\Repository\RepositoryInterface;
 
 interface MarkerRepository extends RepositoryInterface
 {
@@ -32,4 +31,10 @@ interface MarkerRepository extends RepositoryInterface
      * @return mixed
      */
     public function createRelation($marker, $prestation);
+
+    /**
+     * @param $data
+     * @return false|mixed
+     */
+    public function isFree($data);
 }

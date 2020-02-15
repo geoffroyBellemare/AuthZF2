@@ -9,8 +9,6 @@
 namespace Prestation\Repository;
 
 
-use Application\Repository\RepositoryInterface;
-
 interface LevelCategoryRepository extends RepositoryInterface
 {
     /**

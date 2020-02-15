@@ -31,9 +31,24 @@ class MarkerHydrator implements HydratorInterface
         if(!$object instanceof Marker) {
             return [];
         }
-        return [
+
+        $data = [
             'm_id' => $object->getId(),
+            'lat' =>  $object->getLat(),
+            'lng' => $object->getLng(),
+            'c_id' => $object->getCountry()->getId(),
+            'l_id' => $object->getLocality()->getId(),
         ];
+
+        if($departement = $object->getDepartement()) {
+            $data['d_id'] = $departement->getId();
+        }
+
+        if($region = $object->getRegion()) {
+            $data['r_id'] = $region->getId();
+        }
+
+        return $data;
     }
 
     /**
@@ -65,7 +80,7 @@ class MarkerHydrator implements HydratorInterface
 
             $object->setCountry($country);
 
-            if( isset($data['d_id']) && isset($data['d_name']) ) {
+            if( isset($data['d_name']) ) {
 
                 $departement = new Departement();
                 $departement->setId($data['d_id']);

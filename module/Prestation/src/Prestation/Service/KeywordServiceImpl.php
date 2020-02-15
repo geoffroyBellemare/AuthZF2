@@ -36,6 +36,9 @@ class KeywordServiceImpl implements KeywordService
         $this->aliasesRepository = $aliasesRepository;
     }
 
+public function test() {
+        var_dump("testatteor");
+}
     /**
      * @param $e_id
      * @param $keyword

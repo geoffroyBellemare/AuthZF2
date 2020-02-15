@@ -10,35 +10,26 @@ namespace Prestation\Service;
 
 
 use Prestation\Entity\Country;
-use Prestation\Validator\EntityExistValidator;
 
-class CountryServiceImpl implements CountryService
+class CountryServiceImpl extends KeywordServiceImpl2 implements CountryService
 {
-
-    public $adapter;
     /**
      * @var \Prestation\Repository\CountryRepository
      */
     public $countryRepository;
 
     /**
-     * @var \Prestation\Service\KeywordServiceImpl
-     */
-    public $keywordService;
-
-    /**
      * CountryServiceImpl constructor.
-     * @param $adapter
      * @param \Prestation\Repository\CountryRepository $countryRepository
-     * @param KeywordServiceImpl $keywordService
+     * @param \Prestation\Repository\KeywordRepository $keywordRepository
+     * @param \Prestation\Repository\AliasesRepository $aliasesRepository
      */
-    public function __construct($adapter, \Prestation\Repository\CountryRepository $countryRepository, KeywordServiceImpl $keywordService)
+    public function __construct(\Prestation\Repository\CountryRepository $countryRepository, \Prestation\Repository\KeywordRepository $keywordRepository, \Prestation\Repository\AliasesRepository $aliasesRepository)
     {
-        $this->adapter = $adapter;
+        parent::__construct($keywordRepository, $aliasesRepository);
         $this->countryRepository = $countryRepository;
-        $this->keywordService = $keywordService;
-    }
 
+    }
 
     /**
      * @param array $data
@@ -46,15 +37,16 @@ class CountryServiceImpl implements CountryService
      */
     public function save($data)
     {
-        $country = $this->countryRepository->findByName($data['name']);
-        if (!$country) {
+        $keyword = $this->saveKeyword(1, $data['country'], []);
+
+        $country = $this->countryRepository->findByName($data['country']);
+        if(!$country) {
             $country = new Country();
             $country->setName($data['country']);
             $country->setCode($data['country_code']);
+            $country->setKId($keyword->getId());
             $country->setId($this->countryRepository->create($country));
-
         }
-
         return $country;
     }
 

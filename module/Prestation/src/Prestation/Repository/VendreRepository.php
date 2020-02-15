@@ -9,7 +9,18 @@
 namespace Prestation\Repository;
 
 
-class VendreRepository
-{
+use Prestation\Entity\Entreprise;
+use Prestation\Entity\Prestation;
 
+interface VendreRepository extends RepositoryInterface
+{
+    /**
+     * @param Entreprise $entreprise
+     * @param Prestation Prestation
+     * @param Prestation $spot
+     * @param Period $period
+     * @return mixed
+     */
+
+    public function create($entreprise, $prestation, $spot, $period);
 }

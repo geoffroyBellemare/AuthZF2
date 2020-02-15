@@ -22,6 +22,8 @@ use Prestation\Entity\Hydrator\SubTypeHydrator;
 use Prestation\Entity\Hydrator\TypeHydrator;
 use Prestation\Entity\Prestation;
 use Prestation\Entity\PrestationKeyword;
+use Prestation\Utils\DateManipulation;
+use Prestation\Utils\Fields;
 use Zend\Db\Adapter\Adapter;
 use Zend\Db\Adapter\AdapterAwareInterface;
 use Zend\Db\Adapter\AdapterAwareTrait;
@@ -30,7 +32,7 @@ use Zend\Stdlib\Hydrator\Aggregate\AggregateHydrator;
 
 class PrestationRepositoryImpl implements PrestationRepository
 {
-    use AdapterAwareTrait;
+    use Fields, AdapterAwareTrait;
     public $table = 'prestation';
 
     /**
@@ -51,21 +53,27 @@ class PrestationRepositoryImpl implements PrestationRepository
                     'p_name' => $prestation->getName(),
                     'k_id' => $prestation->getKId(),
                     'p_price' => $prestation->getPrice(),
-                    'p_owner' => $prestation->getOwner(),
                     'p_quantity' => $prestation->getQuantity(),
+                    'user_id' => $prestation->getUser()->getUserId(),
                     't_id' => $prestation->getType()->getId(),
+                    'm_id' => $prestation->getMarker()->getId(),
+                    'ad_id' => $prestation->getAddress()->getId(),
+                    'capt_id' => $prestation->getCaption()->getId(),
                     'p_created' => time(),
                 ))
                 ->into('prestation');
             $statment = $sql->prepareStatementForSqlObject($insert);
             $statment->execute();
             $p_id = $this->adapter->getDriver()->getConnection()->getLastGeneratedValue();
-            $this->createRelWithMarker($prestation->getMarker(), $p_id);
+/*            $this->createRelWithMarker($prestation->getMarker(), $p_id);*/
             $this->createRelWithSubType($prestation, $p_id);
-
+            $this->createRelWithAgeCategory($prestation->getAgeCategory(), $p_id);
+            $this->createRelWithLevelCategory($prestation->getLevelCategory(),$p_id);
+            $this->createRelWithSportCategory($prestation->getSportCategory(), $p_id);
             $this->adapter->getDriver()->getConnection()->commit();
 
         } catch (\Exception $e ) {
+            var_dump($e->getMessage());
             $this->adapter->getDriver()->getConnection()->rollback();
 
         }
@@ -101,8 +109,8 @@ class PrestationRepositoryImpl implements PrestationRepository
 
             $this->createRelWithMarker($prestation->getMarker(), $p_id);
             $this->createRelWithSubType($prestation, $p_id);
-/*            $this->createRelWithAgeCategory($prestation->getAgeCategory(), $p_id);
-            $this->createRelWithLevelCategory($prestation->getLevelCategory(),$p_id);*/
+           // $this->createRelWithAgeCategory($prestation->getAgeCategory(), $p_id);
+            /*  $this->createRelWithLevelCategory($prestation->getLevelCategory(),$p_id);*/
 
             $this->adapter->getDriver()->getConnection()->commit();
         } catch( \Exception $e ) {
@@ -169,7 +177,27 @@ class PrestationRepositoryImpl implements PrestationRepository
             }
         }
     }
+    /**
+     * @param \Prestation\Entity\SportCategory[] $sportCategoryList
+     * @param $p_id
+     */
+    public function createRelWithSportCategory($sportCategoryList, $p_id = null ) {
 
+        if( $sportCategoryList ) {
+
+            foreach ($sportCategoryList as $sportCategory ) {
+                $sql = $this->getSql();
+                $insert = $sql->insert()
+                    ->into('category_sport_linker')
+                    ->values(array(
+                        'p_id' => $p_id,
+                        'c_s_id' => $sportCategory->getId()
+                    ));
+                $statment = $sql->prepareStatementForSqlObject($insert);
+                $statment->execute();
+            }
+        }
+    }
 
     /**
      * @param \Prestation\Entity\LevelCategory[] $levelCategoryList
@@ -258,6 +286,77 @@ class PrestationRepositoryImpl implements PrestationRepository
         $statment->execute();
     }
     /**
+     * @param $data
+     * @return false|mixed
+     */
+    public function isFree($data)
+    {
+        var_dump('isfree');
+        var_dump($data);
+        $sql = new \Zend\Db\Sql\Sql($this->adapter);
+        $sql = $this->getSql();
+        $select = $sql->select();
+        $select
+            ->from(array('p'=> 'prestation'))
+            ->columns(array('p_id'))
+            ->join(
+                array('ml' => 'marker_linker'),
+                'ml.p_id = p.p_id',
+                array('*'),
+                $select::JOIN_INNER
+            )
+            ->join(
+                array('pd' => 'period'),
+                'p.p_id = pd.p_id',
+                array(
+                    'pd_start',
+                    'pd_end'
+                ),
+                $select::JOIN_INNER
+            )
+            ->join(
+                array('h' => 'horaire'),
+                'h.pd_id = pd.pd_id',
+                array(
+                    'h_start',
+                    'h_end'
+                ),
+                $select::JOIN_LEFT
+            )
+            ->join(
+                array('m' => 'marker'),
+                'ml.m_id = m.m_id',
+                array('*'),
+                $select::JOIN_INNER
+            )
+            ->join(
+                array('t' => 'type'),
+                't.t_id = p.t_id',
+                array('*'),
+                $select::JOIN_INNER
+            )
+            ->join(
+                array('l' => 'locality'),
+                'l.l_id = m.l_id',
+                array('*'),
+                $select::JOIN_INNER
+            )
+
+            ->where(array(
+                'p.p_name' => $data['name'],
+                'p.t_id' => $data['type'],
+                'l.l_name' => $data['locality']
+                /*'p.p_id' => $prestation->getId(),
+                'pd.pd_start <= ?' => $period->getPdStart(),
+                'pd.pd_end >= ?' => $period->getPdEnd(),
+                'h.h_start = ?' => $horaire->getHStart()*/
+            ));
+        $statment = $sql->prepareStatementForSqlObject($select);
+        $results = $statment->execute();
+        var_dump($results->current());
+        return $results->current();
+    }
+    /**
      * @param $name
      * @param $locality
      * @param $type
@@ -274,23 +373,24 @@ class PrestationRepositoryImpl implements PrestationRepository
                     'p_id',
                     'p_name',
                     'p_price',
-                    'p_owner',
                     'p_quantity',
                     't_id',
                     'p_created',
-/*                    'age_categories' => $this->getSubQueryAgeCategories(),
-                    'level_categories' => $this->getSubQueryLevelCategories()*/
+                    'm_id',
+                    'sub_types' => $this->getSubtypesQuery(),
+                    'age_categories' => $this->getSubQueryAgeCategories(),
+                    'level_categories' => $this->getSubQueryLevelCategories()
                 )
             )
-           ->join(
+/*           ->join(
                 array('ml' => 'marker_linker'),
                 'ml.p_id = p.p_id',
                 array('*'),
                 $select::JOIN_INNER
-            )
+            )*/
             ->join(
                 array('m' => 'marker'),
-                'ml.m_id = m.m_id',
+                'm.m_id = p.m_id',
                 array('*'),
                 $select::JOIN_INNER
             )
@@ -313,27 +413,27 @@ class PrestationRepositoryImpl implements PrestationRepository
                   array('*'),
                   $select::JOIN_INNER
               )
-              ->join(
+/*              ->join(
                   array('dl' => 'department_linker'),
                   'm.m_id = dl.m_id',
                   array('d_id'),
                   $select::JOIN_LEFT
-              )
+              )*/
               ->join(
                   array('d' => 'department'),
-                  'd.d_id = dl.d_id',
+                  'd.d_id = m.d_id',
                   array('d_name'),
                   $select::JOIN_LEFT
               )
-              ->join(
+/*              ->join(
                   array('rl' => 'region_linker'),
                   'rl.m_id = m.m_id',
                   array('r_id'),
                   $select::JOIN_LEFT
-              )
+              )*/
               ->join(
                   array('r' => 'region'),
-                  'r.r_id = rl.r_id',
+                  'r.r_id = m.r_id',
                   array('r_name'),
                   $select::JOIN_LEFT
               )
@@ -549,8 +649,26 @@ class PrestationRepositoryImpl implements PrestationRepository
     public function fetchByid($id)
     {
         $sql = new \Zend\Db\Sql\Sql($this->adapter);
-        $select = $this->getSqlfetch($sql);
-        $select->where(array('p.p_id' => $id));
+        $sql= new \Zend\Db\Sql\Sql($this->adapter);
+        $select  = $sql->select();
+        $select->from(array('p' => $this->table))
+            ->columns(
+                array(
+                    'p_id',
+                    'p_name',
+                    'p_price',
+                    'p_quantity',
+                    't_id',
+                    'p_created',
+                    'm_id',
+                    'sub_types' => $this->getSubtypesQuery(),
+                    'age_categories' => $this->getSubQueryAgeCategories(),
+                    'level_categories' => $this->getSubQueryLevelCategories()
+                )
+            )
+            ->where(array('p.p_id' => $id));
+/*        $select = $this->getSqlfetch($sql);
+        $select->where(array('p.p_id' => $id));*/
         $statment = $sql->prepareStatementForSqlObject($select);
         $result = $statment->execute();
 
@@ -785,6 +903,150 @@ class PrestationRepositoryImpl implements PrestationRepository
             ->where('p.p_id = cmdl.p_id');
 
         return new \Zend\Db\Sql\Expression("GROUP_CONCAT(?)", array($select));
+    }
+
+
+    /**
+     * @param int $id
+     * @return void
+     */
+    public function delete($id)
+    {
+        $target = array('p_id' => $id);
+        $sql = new \Zend\Db\Sql\Sql($this->adapter);
+
+        try {
+            $this->adapter->getDriver()->getConnection()->beginTransaction();
+
+            $deleteSubTypeLinker = $sql->delete()->from('sub_type_linker')->where($target);
+            $statement = $sql->prepareStatementForSqlObject($deleteSubTypeLinker);
+            $statement->execute();
+
+            $deleteAgeCategoryLinker = $sql->delete()->from('category_age_linker')->where($target);
+            $statement = $sql->prepareStatementForSqlObject($deleteAgeCategoryLinker);
+            $statement->execute();
+
+            $deleteLevelCategoryLinker = $sql->delete()->from('category_level_linker')->where($target);
+            $statement = $sql->prepareStatementForSqlObject($deleteLevelCategoryLinker);
+            $statement->execute();
+
+            $deleteMarkerLinker = $sql->delete()->from('marker_linker')->where($target);
+            $statement = $sql->prepareStatementForSqlObject($deleteMarkerLinker);
+            $statement->execute();
+
+            $deletePeriodLinker = $sql->delete()->from('period')->where($target);
+            $statement = $sql->prepareStatementForSqlObject($deletePeriodLinker);
+            $statement->execute();
+
+            $deletePeriodLinker = $sql->delete()->from('prestation')->where($target);
+            $statement = $sql->prepareStatementForSqlObject($deletePeriodLinker);
+            $statement->execute();
+
+            $this->adapter->getDriver()->getConnection()->commit();
+        } catch (\Exception $error ){
+            var_dump($error);
+            $this->adapter->getDriver()->getConnection()->rollback();
+        }
+    }
+
+
+    /**
+     * @param $data
+     * @return false|mixed
+     */
+    public function isRecordExist($data)
+    {
+
+        $sql = new \Zend\Db\Sql\Sql($this->adapter);
+        $sql = $this->getSql();
+        $select = $sql->select();
+        $select
+            ->from(array('p'=> 'prestation'))
+            ->columns(array('p_id'))
+            ->join(
+                array('ml' => 'marker_linker'),
+                'ml.p_id = p.p_id',
+                array('*'),
+                $select::JOIN_INNER
+            )
+            ->join(
+                array('m' => 'marker'),
+                'ml.m_id = m.m_id',
+                array('*'),
+                $select::JOIN_INNER
+            )
+            ->join(
+                array('t' => 'type'),
+                't.t_id = p.t_id',
+                array('*'),
+                $select::JOIN_INNER
+            )
+            ->join(
+                array('l' => 'locality'),
+                'l.l_id = m.l_id',
+                array('*'),
+                $select::JOIN_INNER
+            )
+
+            ->where(array(
+                'p.p_name' => $data['name'],
+                'p.t_id' => $data['type'],
+                'l.l_name' => $data['locality']
+                /*'p.p_id' => $prestation->getId(),
+                'pd.pd_start <= ?' => $period->getPdStart(),
+                'pd.pd_end >= ?' => $period->getPdEnd(),
+                'h.h_start = ?' => $horaire->getHStart()*/
+            ));
+        $statment = $sql->prepareStatementForSqlObject($select);
+        $results = $statment->execute();
+        return $results->current();
+    }
+
+    public function fetchByHoraire($time, $id = null)
+    {
+        $target = [
+            'pd.pd_start <= ?' => DateManipulation::convertDateStringToDate($time['start']),
+            'pd.pd_end >= ?' => DateManipulation::convertDateStringToDate($time['end']),
+            'h.h_day' => DateManipulation::convertDateStringToWeekDay($time['start']),
+            'h.h_start <= ?' => DateManipulation::convertDateStringToTime($time['start']),
+            'h.h_end >= ?' => DateManipulation::convertDateStringToTime($time['end']) ];
+
+        if ($id) $target['p.p_id'] = $id;
+
+        $sql= new \Zend\Db\Sql\Sql($this->adapter);
+        $select  = $sql->select();
+        $select->from(array('p' => $this->table))
+            ->columns(
+                array('*')
+            )
+            ->join(
+                array('pd' => 'period'),
+                'p.p_id = pd.p_id',
+                array(
+                    'pd_start',
+                    'pd_end',
+                    'pd_business_weekday'
+                ),
+                $select::JOIN_LEFT
+            )
+            ->join(
+                array('h' => 'horaire'),
+                'h.pd_id = pd.pd_id',
+                array(
+                    'h_start',
+                    'h_end',
+                    'h_day'
+                ),
+                $select::JOIN_LEFT
+            )
+            ->where($target);
+
+
+        $statment = $sql->prepareStatementForSqlObject($select);
+        $result = $statment->execute();
+        $resultSet = new HydratingResultSet($this->getHydrator(), new Prestation());
+        $resultSet->initialize($result);
+        return ( $resultSet->count() > 0 ) ? $resultSet->current() : null;
     }
 
 

@@ -9,62 +9,48 @@
 namespace Prestation\Service;
 
 
-use Admin\Utils\Backup;
-use Admin\Utils\BackupFilter;
+use Prestation\Utils\Backup;
+use Prestation\Utils\BackupFilter;
 use Cocur\Slugify\Slugify;
 use Prestation\Entity\SubType;
 
-class SubTypeServiceImpl implements SubTypeService
+class SubTypeServiceImpl extends KeywordServiceImpl2 implements SubTypeService
 {
-    /**
-     * @var \Prestation\Service\KeywordServiceImpl
-     */
-    protected $keywordService;
+
     /**
      * @var \Prestation\Repository\SubTypeRepository $subTypeRepository
      */
     protected $subTypeRepository;
+
+
     /**
-     * @var \Prestation\Repository\SlugRepository
+     * TypeServiceImpl constructor.
+     * @param \Prestation\Repository\SubTypeRepository $subTypeRepository
+     * @param KeywordServiceImpl $keywordService
      */
-    protected $slugRepository;
-    /**
-     * @var \Zend\Db\Adapter\AdapterInterface
-     */
-    protected $adapter;
-    /**
-     * @param \Prestation\Entity\SubType $subType
-     * @return \Prestation\Entity\SubType
-     */
-    public function save($subType)
+    public function __construct(\Prestation\Repository\SubTypeRepository $subTypeRepository, \Prestation\Repository\KeywordRepository $keywordRepository, \Prestation\Repository\AliasesRepository $aliasesRepository)
     {
-        //($subType);
-        $subType->setId($this->subTypeRepository->save($subType));
+        parent::__construct($keywordRepository, $aliasesRepository);
+        $this->subTypeRepository = $subTypeRepository;
+    }
 
-        if(!$subType->getId()) {
-            $subType = $this->subTypeRepository->findByName($subType->getName());
-        }
-        return $subType;
-/*     ???????
-        $connection = $this->adapter->getDriver()->getConnection();
-        try{
 
-            $connection->beginTransaction();
-            $st_id = $this->subTypeRepository->save($subType);
-           foreach ( $subType->getSlugs() as $slug ) {
+    /**
+     * @param [] $data
+     * @return null|SubType[]
+     */
+    public function save($data)
+    {
+        $subtypes = $data["subtype"];
+        $subtypesList = [];
 
-                $this->slugRepository->save($slug, 2, $st_id);
+        foreach ($subtypes as $key => $keywords) {
+            $subType = $this->save2($keywords['keyword'], $keywords['aliases'] );
+            if ( $subType ){
+                $subtypesList[] = $subType;
             }
-            $connection->commit();
-
-        } catch (\Exception $execption) {
-            $connection->rollback();
-        }*/
-
-/*
-        foreach ( $subType->getSlugs() as $slug ) {
-            $this->slugRepository->save($slug,2,$st_id);
-        }*/
+        }
+        return count($subtypesList) > 0 ? $subtypesList: null;
     }
 
     /**
@@ -73,7 +59,7 @@ class SubTypeServiceImpl implements SubTypeService
      * @return null|SubType
      */
     public function save2( $name, $aliases ) {
-        $keyword = $this->keywordService->save(6, $name, $aliases );
+        $keyword = $this->saveKeyword(6, $name, $aliases );
 
         $subType = $this->subTypeRepository->findByName($name);
         if( !$subType ) {
@@ -82,15 +68,6 @@ class SubTypeServiceImpl implements SubTypeService
             $subType->setKId($keyword->getId());
             $subType->setId($this->subTypeRepository->save($subType));
         }
-/*        $subType = new SubType();
-        $subType->setName($name);
-        $subType->setKId($keyword->getId());
-        $subType->setId($this->subTypeRepository->save($subType));
-
-        if( !$subType->getId() ) {
-            $subType = $this->subTypeRepository->findByName($name);
-        }*/
-
         return $subType;
     }
     /**
@@ -127,7 +104,7 @@ class SubTypeServiceImpl implements SubTypeService
      */
     public function fetch()
     {
-        return $this->subTypeRepository->fetch();
+        //return $this->subTypeRepository->fetch();
     }
     /**
      * @param $id
@@ -135,7 +112,7 @@ class SubTypeServiceImpl implements SubTypeService
      */
     public function findById($id)
     {
-        return $this->subTypeRepository->findById($id);
+        //return $this->subTypeRepository->findById($id);
     }
     /**
      * @param \Prestation\Entity\SubType $subType
@@ -143,70 +120,8 @@ class SubTypeServiceImpl implements SubTypeService
      */
     public function update($subType)
     {
-        //TODO
-        /*
-         * 1)dans tt les update du ss type
-         * 2)pour les slug??
-         * A)!!!ne pas updater le les slug
-         * B)le creer si existe pas
-         * C) linker si il existe
-         */
-        try {
 
-            $this->adapter->getDriver()->getConnection()->beginTransaction();
-            var_dump($subType);
-            $this->subTypeRepository->update($subType);
-
-            foreach ($subType->getSlugs() as $slug ) {
-
-                  $this->slugRepository->save($slug,2, $subType->getId());
-
-            }
-
-            $this->adapter->getDriver()->getConnection()->commit();
-        } catch ( \Exception $exception) {
-            $this->adapter->getDriver()->getConnection()->rollback();
-        }
 
     }
-
-
-    public function setSubTypeRepository($subTypeRepository)
-    {
-        $this->subTypeRepository = $subTypeRepository;
-    }
-
-    /**
-     * @param mixed $slugRepository
-     */
-    public function setSlugRepository($slugRepository)
-    {
-        $this->slugRepository = $slugRepository;
-    }
-
-    /**
-     * @param mixed $adapter
-     */
-    public function setAdapter($adapter)
-    {
-        $this->adapter = $adapter;
-    }
-
-    /**
-     * @return KeywordServiceImpl
-     */
-    public function getKeywordService()
-    {
-        return $this->keywordService;
-    }
-
-    /**
-     * @param KeywordServiceImpl $keywordService
-     */
-    public function setKeywordService($keywordService)
-    {
-        $this->keywordService = $keywordService;
-    }
-
 
 }

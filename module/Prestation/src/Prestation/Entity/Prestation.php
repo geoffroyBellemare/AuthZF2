@@ -54,6 +54,18 @@ class Prestation
      */
     public $markers;
     /**
+     * @var \Prestation\Entity\Address
+     */
+    public $address;
+    /**
+     * @var \Prestation\Entity\User
+     */
+    public $user;
+    /**
+     * @var \Prestation\Entity\Caption
+     */
+    public $caption;
+    /**
      * @var array
      */
     public $ageCategory;
@@ -61,6 +73,10 @@ class Prestation
      * @var \Prestation\Entity\LevelCategory[]
      */
     public $levelCategory;
+    /**
+     * @var \Prestation\Entity\SportCategory[]
+     */
+    public $sportCategory;
     /**
      * @var SubType[]
      */
@@ -254,7 +270,7 @@ class Prestation
     }
 
     /**
-     * @param array $ageCategory
+     * @param []AgeCategory $ageCategory
      */
     public function setAgeCategory($ageCategory)
     {
@@ -270,7 +286,7 @@ class Prestation
     }
 
     /**
-     * @param LevelCategory[] $levelCategory
+     * @param []LevelCategory $levelCategory
      */
     public function setLevelCategory($levelCategory)
     {
@@ -419,6 +435,70 @@ class Prestation
     public function setRKeywords($r_keywords)
     {
         $this->r_keywords = $r_keywords;
+    }
+
+    /**
+     * @return SportCategory[]
+     */
+    public function getSportCategory()
+    {
+        return $this->sportCategory;
+    }
+
+    /**
+     * @param SportCategory[] $sportCategory
+     */
+    public function setSportCategory($sportCategory)
+    {
+        $this->sportCategory = $sportCategory;
+    }
+
+    /**
+     * @return Address
+     */
+    public function getAddress()
+    {
+        return $this->address;
+    }
+
+    /**
+     * @param Address $address
+     */
+    public function setAddress($address)
+    {
+        $this->address = $address;
+    }
+
+    /**
+     * @return User
+     */
+    public function getUser()
+    {
+        return $this->user;
+    }
+
+    /**
+     * @param User $user
+     */
+    public function setUser($user)
+    {
+        $this->user = $user;
+    }
+
+    /**
+     * @return Caption
+     */
+    public function getCaption()
+    {
+        return $this->caption;
+    }
+
+    /**
+     * @param Caption $caption
+     */
+    public function setCaption($caption)
+    {
+        $this->caption = $caption;
     }
 
 

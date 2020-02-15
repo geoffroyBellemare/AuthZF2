@@ -9,7 +9,7 @@
 namespace Prestation\Repository;
 
 
-use Application\Repository\RepositoryInterface;
+use Prestation\Repository\RepositoryInterface;
 
 interface AliasesRepository extends RepositoryInterface
 {

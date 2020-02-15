@@ -108,13 +108,23 @@ return array(
         ),
     ),
     'controllers' => array(
+        'factories' => array(
+                'Prestation\Controller\Prestation' => 'Prestation\Controller\Factory\PrestationControllerFactory',
+                'Prestation\Controller\Reservation' => 'Reservation\Controller\Factory\ReservationControllerFactory'
+        ),
         'invokables' => array(
             'Prestation\Controller\Index' => Controller\IndexController::class,
-            'Prestation\Controller\Prestation' => Controller\PrestationRestController::class
+            //'Prestation\Controller\Prestation' => Controller\PrestationController::class
 
         ),
     ),
-
+    'validators' => array(
+        'factories' => array(
+            'Prestation\Validator\HoraireValidator' => 'Prestation\Validator\Factory\HoraireValidatorFactory',
+            'Prestation\Validator\ReservationValidator' => 'Prestation\Validator\Factory\ReservationValidatorFactory',
+            'Prestation\Validator\PrestationIsOpenValidator' => 'Prestation\Validator\Factory\PrestationIsOpenValidatorFactory',
+        ),
+    ),
     'view_manager' => array(
         'strategies' => array(
             'ViewJsonStrategy',

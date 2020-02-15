@@ -6,7 +6,7 @@
  * Time: 21:10
  */
 
-namespace Admin\Utils;
+namespace Prestation\Utils;
 
 
 class BackupComodity {

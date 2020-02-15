@@ -22,5 +22,5 @@ interface DepartementService
      * @param \Prestation\Entity\Marker $marker
      * @return mixed
      */
-    public function saveRelation($departement, $marker);
+    //public function saveRelation($departement, $marker);
 }

@@ -9,7 +9,7 @@
 namespace Prestation\Repository;
 
 
-use Application\Repository\RepositoryInterface;
+
 
 interface DepartementRepository extends RepositoryInterface
 {

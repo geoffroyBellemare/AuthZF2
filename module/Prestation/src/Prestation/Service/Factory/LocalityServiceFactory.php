@@ -9,7 +9,27 @@
 namespace Prestation\Service\Factory;
 
 
-class LocalityServiceFactory
+use Prestation\Service\LocalityServiceImpl;
+use Zend\ServiceManager\FactoryInterface;
+use Zend\ServiceManager\ServiceLocatorInterface;
+
+class LocalityServiceFactory implements FactoryInterface
 {
 
+    /**
+     * Create service
+     *
+     * @param ServiceLocatorInterface $serviceLocator
+     * @return mixed
+     */
+    public function createService(ServiceLocatorInterface $serviceLocator)
+    {
+        // TODO: Implement createService() method.
+        $localityRepo = $serviceLocator->get('Prestation\Repository\LocalityRepository');
+        $keywordRepo = $serviceLocator->get('Prestation\Repository\KeywordRepository');
+        $aliasesRepo = $serviceLocator->get('Prestation\Repository\AliasesRepository');
+
+        $service  = new LocalityServiceImpl($localityRepo, $keywordRepo, $aliasesRepo);
+        return $service;
+    }
 }

@@ -11,5 +11,22 @@ namespace Prestation\Service;
 
 interface PrestataireService
 {
+    /**
+     * @param $pvr_id
+     * @param $date
+     * @return mixed
+     */
+    public function isFree($pvr_id, $date);
 
+    /**
+     * @param []$data
+     * @return mixed
+     */
+    public function isHostFree($data);
+
+    /**
+     * @param $data
+     * @return mixed
+     */
+    public function isHostOpen($data);
 }

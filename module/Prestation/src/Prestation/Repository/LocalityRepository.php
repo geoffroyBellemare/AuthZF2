@@ -9,7 +9,6 @@
 namespace Prestation\Repository;
 
 
-use Application\Repository\RepositoryInterface;
 
 interface LocalityRepository extends RepositoryInterface
 {

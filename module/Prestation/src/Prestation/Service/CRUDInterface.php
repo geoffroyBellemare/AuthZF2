@@ -9,7 +9,37 @@
 namespace Prestation\Service;
 
 
-interface SportCategoryService
+use Prestation\Entity\SportCategory;
+
+interface CRUDInterface
 {
+    /**
+     * @param $data
+     * @return mixed|null
+     */
+    public function save($data);
+
+    /**
+     * @param $id
+     * @return void
+     */
+    public function delete($id);
+
+    /**
+     * @param $id
+     * @return mixed
+     */
+    public function update($id);
+
+    /**
+     * @param $id
+     * @return mixed
+     */
+    public function fetchById($id);
+
+    /**
+     * @return []mixed
+     */
+    public function fetchAll();
 
 }

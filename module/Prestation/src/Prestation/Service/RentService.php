@@ -11,5 +11,13 @@ namespace Prestation\Service;
 
 interface RentService
 {
+    /**
+     * @param \Prestation\Entity\Prestation $prestation
+     * @param \Prestation\Entity\Period $period
+     * @param float $price
+     * @@return false|mixed
+     */
+    public function save($prestation, $period, $price);
+
 
 }

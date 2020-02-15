@@ -9,11 +9,13 @@
 namespace Prestation\Service;
 
 
+use Prestation\Entity\Locality;
+
 interface LocalityService
 {
     /**
      * @param $data
-     * @return mixed
+     * @return mixed|Locality
      */
     public function save($data);
 

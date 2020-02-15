@@ -9,7 +9,26 @@
 namespace Prestation\Service\Factory;
 
 
-class AddressServiceFactory
+use Prestation\Service\AddressServiceImpl;
+use Zend\ServiceManager\FactoryInterface;
+use Zend\ServiceManager\ServiceLocatorInterface;
+
+class AddressServiceFactory implements FactoryInterface
 {
 
+    /**
+     * Create service
+     *
+     * @param ServiceLocatorInterface $serviceLocator
+     * @return mixed
+     */
+    public function createService(ServiceLocatorInterface $serviceLocator)
+    {
+        $addressRepo = $serviceLocator->get('Prestation\Repository\AddressRepository');
+        $keywordRepo = $serviceLocator->get('Prestation\Repository\KeywordRepository');
+        $aliasesRepo = $serviceLocator->get('Prestation\Repository\AliasesRepository');
+        $service = new AddressServiceImpl($addressRepo, $keywordRepo, $aliasesRepo);
+
+        return $service;
+    }
 }

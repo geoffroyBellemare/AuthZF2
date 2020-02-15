@@ -6,7 +6,7 @@
  * Time: 22:26
  */
 
-namespace Application\Repository;
+namespace Prestation\Repository;
 
 
 use Zend\Db\Adapter\AdapterAwareInterface;

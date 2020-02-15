@@ -19,6 +19,7 @@ class MarkerValidator extends AbstractValidator
 {
     public $validatorChain;
     public $options;
+    public $validatorMarkerLatLng;
     protected $messageTemplates = array(
         'marker' => [
             'lat' => [],
@@ -30,7 +31,8 @@ class MarkerValidator extends AbstractValidator
     );
     public function __construct($options = null)
     {
-
+        parent::__construct($options);
+        $this->validatorMarkerLatLng = new MarkerLatLngNoRecordExist($options);
     }
 
     /**
@@ -92,6 +94,11 @@ class MarkerValidator extends AbstractValidator
             $isValid = false;
             $this->addMessage('le bordel n est est vide', 'lng');
 
+        }
+        if (!$this->validatorMarkerLatLng->isValid($data)) {
+            $isValid = false;
+            $this->addMessage('Latlng Already Use', 'lat');
+            $this->addMessage('Latlng Already Use', 'lng');
         }
         $this->error('marker');
         //$this->error('lng');

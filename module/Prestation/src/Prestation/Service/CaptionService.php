@@ -9,7 +9,13 @@
 namespace Prestation\Service;
 
 
-class CaptionService
-{
+use Prestation\Entity\Caption;
 
+interface CaptionService
+{
+    /**
+     * @param $data
+     * @return Caption|null
+     */
+    public function save($data);
 }

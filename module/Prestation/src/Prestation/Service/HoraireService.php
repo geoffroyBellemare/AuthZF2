@@ -11,5 +11,10 @@ namespace Prestation\Service;
 
 interface HoraireService
 {
-
+    /**
+     * @param [] $data
+     * @param int $pd_id
+     * @return mixed
+     */
+    public function save($data, $pd_id);
 }

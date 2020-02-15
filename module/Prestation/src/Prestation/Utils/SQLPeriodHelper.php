@@ -9,7 +9,7 @@
 namespace Prestation\Utils;
 
 
-class SQLHelper
+class SQLPeriodHelper
 {
     /**
      * @param \Zend\Db\Sql\Sql $sql
@@ -82,9 +82,11 @@ class SQLHelper
     static public function getPredicateSetPeriodExistingSql ($data) {
         $having = new \Zend\Db\Sql\Having();
         $predicateSet = $having->nest();
-        $predicateSet->addPredicate(new \Zend\Db\Sql\Predicate\Operator('pd_start',\Zend\Db\Sql\Predicate\Operator::OPERATOR_EQUAL_TO, $data['start']));
+        $predicateSet->addPredicate(new \Zend\Db\Sql\Predicate\Operator('pd_business_weekday',\Zend\Db\Sql\Predicate\Operator::OPERATOR_EQUAL_TO, $data['business_weekday']));
+        $predicateSet->andPredicate(new \Zend\Db\Sql\Predicate\Operator('pd_start',\Zend\Db\Sql\Predicate\Operator::OPERATOR_EQUAL_TO, $data['start']));
         $predicateSet->andPredicate(new \Zend\Db\Sql\Predicate\Operator('pd_end',\Zend\Db\Sql\Predicate\Operator::OPERATOR_EQUAL_TO, $data['end']));
-        foreach ($data['subTypes'] as $id) {
+        $predicateSet->andPredicate(new \Zend\Db\Sql\Predicate\Operator('p_id',\Zend\Db\Sql\Predicate\Operator::OPERATOR_EQUAL_TO, $data['p_id']));
+/*        foreach ($data['subTypes'] as $id) {
             $predicateSet->andPredicate(new \Zend\Db\Sql\Predicate\Expression("pd_subtypes REGEXP '([^0-9]{0,1}" . $id .":)'"));
         }
         foreach ($data['ageCategories'] as $id) {
@@ -92,7 +94,7 @@ class SQLHelper
         }
         foreach ($data['levelCategories'] as $id) {
             $predicateSet->andPredicate(new \Zend\Db\Sql\Predicate\Expression("pd_level_categories REGEXP '([^0-9]{0,1}" . $id .":)'"));
-        }
+        }*/
 
         $predicateSet->unnest();
         return $predicateSet;

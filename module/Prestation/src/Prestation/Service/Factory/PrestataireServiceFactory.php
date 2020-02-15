@@ -9,7 +9,24 @@
 namespace Prestation\Service\Factory;
 
 
-class PrestataireServiceFactory
+use Prestation\Service\PrestataireServiceImpl;
+use Zend\ServiceManager\FactoryInterface;
+use Zend\ServiceManager\ServiceLocatorInterface;
+
+class PrestataireServiceFactory implements FactoryInterface
 {
 
+    /**
+     * Create service
+     *
+     * @param ServiceLocatorInterface $serviceLocator
+     * @return mixed
+     */
+    public function createService(ServiceLocatorInterface $serviceLocator)
+    {
+        // TODO: Implement createService() method.
+        $prestataireRepo = $serviceLocator->get('Prestation\Repository\PrestataireRepository');
+        $service = new PrestataireServiceImpl($prestataireRepo);
+        return $service;
+    }
 }

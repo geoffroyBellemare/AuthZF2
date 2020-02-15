@@ -9,7 +9,23 @@
 namespace Prestation\Service\Factory;
 
 
-class CaptionServiceFactory
+use Prestation\Service\CaptionServiceImpl;
+use Zend\ServiceManager\FactoryInterface;
+use Zend\ServiceManager\ServiceLocatorInterface;
+
+class CaptionServiceFactory implements FactoryInterface
 {
 
+    /**
+     * Create service
+     *
+     * @param ServiceLocatorInterface $serviceLocator
+     * @return mixed
+     */
+    public function createService(ServiceLocatorInterface $serviceLocator)
+    {
+        $captionRepo = $serviceLocator->get('Prestation\Repository\CaptionRepository');
+        $service = new CaptionServiceImpl($captionRepo);
+        return $service;
+    }
 }
